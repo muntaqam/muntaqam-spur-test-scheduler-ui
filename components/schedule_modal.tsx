@@ -28,7 +28,7 @@ export default function ScheduleModalContent({ closeModal }: ScheduleModalConten
 
     useEffect(() => {
         const now = new Date();
-        const formattedDate = now.toISOString().slice(0, 16); // ISO format without seconds
+        const formattedDate = now.toISOString().slice(0, 16);
         setStartDate(formattedDate);
     }, []);
 
