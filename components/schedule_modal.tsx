@@ -15,10 +15,17 @@ import { createClient } from "@/utils/supabase/client";
 export default function ScheduleModalContent() {
     const [selectedDays, setSelectedDays] = useState<string[]>(["Mon"]);
     const [testSuite, setTestSuite] = useState(""); // Selected test suite
-    const [startDate, setStartDate] = useState("2024-10-10T07:00");
+    const [startDate, setStartDate] = useState("");
     const [testSuites, setTestSuites] = useState<string[]>([]); // List of test suites
     const [isAddingNew, setIsAddingNew] = useState(false); // Flag for adding a new test suite
     const [newTestSuiteName, setNewTestSuiteName] = useState(""); // New test suite name
+
+
+    useEffect(() => {
+        const now = new Date();
+        const formattedDate = now.toISOString().slice(0, 16); // ISO format without seconds
+        setStartDate(formattedDate);
+    }, []); // This effect runs once when the component is rendered
 
     // Fetch distinct test suites from the schedules table
     useEffect(() => {

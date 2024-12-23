@@ -4,12 +4,11 @@ import { useState, useEffect } from "react";
 import { Dialog, DialogTrigger } from "@/components/ui/dialog";
 import ScheduleModalContent from "@/components/schedule_modal";
 import { createClient } from "@/utils/supabase/client";
-import { useQuery } from "@tanstack/react-query";
 
 export default function ScheduledSuitesAndCalendar() {
     // State to track the currently selected date (start of the week)
     const [selectedDate, setSelectedDate] = useState(new Date());
-    const [events, setEvents] = useState<{ id: number; title: string; day: number; startTime: number }[]>([]);
+    const [events, setEvents] = useState<{ id: number; title: string; day: number; startTime: Date }[]>([]);
     const [currentWeek, setCurrentWeek] = useState<{ day: string; date: string }[]>([]);
 
     // Function to format the displayed week start date
@@ -54,18 +53,19 @@ export default function ScheduledSuitesAndCalendar() {
                     console.error("Error fetching schedules:", error.message);
                     return;
                 }
+                const transformedEvents = data.flatMap((schedule) => {
+                    const startDateTime = new Date(schedule.start_time); // Convert `start_time` to a Date object
+                    const pstDateTime = new Date(
+                        startDateTime.toLocaleString("en-US", { timeZone: "America/Los_Angeles" })
+                    ); // Convert UTC to PST
 
-                const transformedEvents = data.flatMap((schedule) =>
-                    schedule.days.map((day: string) => {
-                        const startDateTime = new Date(schedule.start_time); // Full Date object
-                        return {
-                            id: schedule.id,
-                            title: schedule.test_suite,
-                            day: ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].indexOf(day),
-                            startTime: startDateTime.getHours() + startDateTime.getMinutes() / 60, // Calculate fractional hour
-                        };
-                    })
-                );
+                    return schedule.days.map((day: string) => ({
+                        id: schedule.id,
+                        title: schedule.test_suite,
+                        day: ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].indexOf(day),
+                        startTime: pstDateTime, // Use PST Date object
+                    }));
+                });
 
                 setEvents(transformedEvents);
             } catch (err) {
@@ -164,7 +164,7 @@ export default function ScheduledSuitesAndCalendar() {
                                                 {events.map(
                                                     (event) =>
                                                         event.day === dayIndex &&
-                                                        Math.floor(event.startTime) === timeIndex && ( // Match integer hour
+                                                        new Date(event.startTime).getHours() === timeIndex && ( // Match the hour
                                                             <div
                                                                 key={event.id}
                                                                 className="absolute top-1 left-1 right-1 h-16 bg-blue-50 text-blue-700 rounded-lg shadow-md flex flex-col items-start justify-center px-4 border border-blue-400"
@@ -185,7 +185,7 @@ export default function ScheduledSuitesAndCalendar() {
                                                                             d="M12 6v6h4.5m4.5 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"
                                                                         />
                                                                     </svg>
-                                                                    {new Date(event.startTime * 3600 * 1000).toLocaleTimeString([], {
+                                                                    {event.startTime.toLocaleTimeString([], {
                                                                         hour: "2-digit",
                                                                         minute: "2-digit",
                                                                         hour12: true,
@@ -195,6 +195,7 @@ export default function ScheduledSuitesAndCalendar() {
                                                             </div>
                                                         )
                                                 )}
+
                                             </div>
                                         ))}
                                     </div>
