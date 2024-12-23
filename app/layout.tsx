@@ -10,6 +10,8 @@ import Link from "next/link";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query"; // Import QueryClientProvider
 import { useState } from "react"; // For managing QueryClient instance
 import "./globals.css";
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css'; // Ensure global CSS for Toastify
 
 const defaultUrl = process.env.VERCEL_URL
   ? `https://${process.env.VERCEL_URL}`
@@ -47,6 +49,7 @@ export default function RootLayout({
                   {/* Add any navigation content here */}
                 </nav>
                 <div className="w-full flex flex-col p-6 bg-white">{children}</div>
+                <ToastContainer />
               </div>
             </main>
           </QueryClientProvider>

@@ -11,7 +11,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { createClient } from "@/utils/supabase/client";
-
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 interface ScheduleModalContentProps {
     closeModal: () => void;
 }
@@ -90,7 +91,8 @@ export default function ScheduleModalContent({ closeModal }: ScheduleModalConten
 
                 // Close the modal and exit to avoid redundant schedule insertion
                 closeModal();
-                alert("New test suite added successfully!");
+                alert("Toast triggered");
+                toast.success("Test suite added to schedule!");
                 return;
             }
 
@@ -115,6 +117,8 @@ export default function ScheduleModalContent({ closeModal }: ScheduleModalConten
                 return;
             }
 
+            alert("Toast triggered");
+            toast.success("Test suite added to schedule!");
             closeModal(); // Close the modal after successful save
             alert("Schedule saved successfully!");
         } catch (err) {
@@ -269,6 +273,7 @@ export default function ScheduleModalContent({ closeModal }: ScheduleModalConten
                     </Button>
                 </DialogFooter>
             </form>
+            <ToastContainer />
         </DialogContent>
     );
 }
