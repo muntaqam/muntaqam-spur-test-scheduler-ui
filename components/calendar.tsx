@@ -61,16 +61,14 @@ export default function ScheduledSuitesAndCalendar() {
                     return;
                 }
                 const transformedEvents = data.flatMap((schedule) => {
-                    const startDateTime = new Date(schedule.start_time); // Convert `start_time` to a Date object
-                    const pstDateTime = new Date(
-                        startDateTime.toLocaleString("en-US", { timeZone: "America/Los_Angeles" })
-                    ); // Convert UTC to PST
+                    // Use the start_time as is, without any time zone conversion
+                    const startDateTime = new Date(schedule.start_time); // Use the stored start_time directly
 
                     return schedule.days.map((day: string) => ({
                         id: schedule.id,
                         title: schedule.test_suite,
                         day: ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].indexOf(day),
-                        startTime: pstDateTime, // Use PST Date object
+                        startTime: startDateTime, // Directly use the stored start_time without conversion
                     }));
                 });
 
@@ -82,6 +80,7 @@ export default function ScheduledSuitesAndCalendar() {
 
         fetchSchedules();
     }, []);
+
 
     const timeSlots = Array.from({ length: 24 }, (_, i) => {
         const hour = i % 12 === 0 ? 12 : i % 12;
@@ -170,40 +169,40 @@ export default function ScheduledSuitesAndCalendar() {
                                                 key={dayIndex}
                                                 className="h-20 border-b border-r border-gray-300 relative"
                                             >
-                                                {events.map(
-                                                    (event) =>
-                                                        event.day === dayIndex &&
-                                                        new Date(event.startTime).getHours() === timeIndex && ( // Match the hour
-                                                            <div
-                                                                key={event.id}
-                                                                className="absolute top-1 left-1 right-1 h-16 bg-blue-50 text-blue-700 rounded-lg shadow-md flex flex-col items-start justify-center px-4 border border-blue-400"
-                                                            >
-                                                                <span className="font-semibold text-blue-700">{event.title}</span>
-                                                                <span className="flex items-center text-sm">
-                                                                    <svg
-                                                                        xmlns="http://www.w3.org/2000/svg"
-                                                                        fill="none"
-                                                                        viewBox="0 0 24 24"
-                                                                        strokeWidth={1.5}
-                                                                        stroke="currentColor"
-                                                                        className="w-5 h-5 mr-1"
-                                                                    >
-                                                                        <path
-                                                                            strokeLinecap="round"
-                                                                            strokeLinejoin="round"
-                                                                            d="M12 6v6h4.5m4.5 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"
-                                                                        />
-                                                                    </svg>
-                                                                    {event.startTime.toLocaleTimeString([], {
-                                                                        hour: "2-digit",
-                                                                        minute: "2-digit",
-                                                                        hour12: true,
-                                                                    })}{" "}
-                                                                    PST
-                                                                </span>
-                                                            </div>
-                                                        )
-                                                )}
+                                                {events.map((event) => (
+                                                    event.day === dayIndex &&
+                                                    new Date(event.startTime).getHours() === timeIndex && ( // Match the hour
+                                                        <div
+                                                            key={event.id}
+                                                            className="absolute top-1 left-1 right-1 h-16 bg-blue-50 text-blue-700 rounded-lg shadow-md flex flex-col items-start justify-center px-4 border border-blue-400"
+                                                        >
+                                                            <span className="font-semibold text-blue-700">{event.title}</span>
+                                                            <span className="flex items-center text-sm">
+                                                                <svg
+                                                                    xmlns="http://www.w3.org/2000/svg"
+                                                                    fill="none"
+                                                                    viewBox="0 0 24 24"
+                                                                    strokeWidth={1.5}
+                                                                    stroke="currentColor"
+                                                                    className="w-5 h-5 mr-1"
+                                                                >
+                                                                    <path
+                                                                        strokeLinecap="round"
+                                                                        strokeLinejoin="round"
+                                                                        d="M12 6v6h4.5m4.5 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"
+                                                                    />
+                                                                </svg>
+                                                                {new Date(event.startTime).toLocaleTimeString([], {
+                                                                    hour: "2-digit",
+                                                                    minute: "2-digit",
+                                                                    hour12: true,
+                                                                })}{" "}
+                                                                {/* Display time exactly as stored */}
+                                                            </span>
+                                                        </div>
+                                                    )
+                                                ))}
+
 
                                             </div>
                                         ))}

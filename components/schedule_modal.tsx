@@ -29,7 +29,7 @@ export default function ScheduleModalContent({ closeModal }: ScheduleModalConten
         const now = new Date();
         const formattedDate = now.toISOString().slice(0, 16); // ISO format without seconds
         setStartDate(formattedDate);
-    }, []); // This effect runs once when the component is rendered
+    }, []);
 
     // Fetch distinct test suites from the schedules table
     useEffect(() => {
@@ -67,11 +67,11 @@ export default function ScheduleModalContent({ closeModal }: ScheduleModalConten
             if (isAddingNew && newTestSuiteName.trim()) {
                 const trimmedName = newTestSuiteName.trim(); // Sanitize the input
 
-                // Add the new test suite to Supabase
+                // Add the new test suite to Supabase, use the local startDate directly without conversion
                 const { error: addSuiteError } = await supabase.from("schedules").insert([
                     {
                         test_suite: trimmedName,
-                        start_time: new Date(startDate).toISOString(), // Provide a valid default start_time
+                        start_time: startDate, // Save as entered without conversion
                         days: selectedDays, // Use selected days
                     },
                 ]);
@@ -100,11 +100,11 @@ export default function ScheduleModalContent({ closeModal }: ScheduleModalConten
                 return;
             }
 
-            // Save the schedule
+            // Save the schedule, use the local startDate directly without conversion
             const { error } = await supabase.from("schedules").insert([
                 {
                     test_suite: testSuite,
-                    start_time: new Date(startDate).toISOString(),
+                    start_time: startDate, // Save as entered without conversion
                     days: selectedDays,
                 },
             ]);
@@ -122,6 +122,8 @@ export default function ScheduleModalContent({ closeModal }: ScheduleModalConten
             alert("An unexpected error occurred. Please try again.");
         }
     };
+
+
 
 
 
