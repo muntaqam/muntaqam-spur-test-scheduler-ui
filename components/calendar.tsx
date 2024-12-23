@@ -10,6 +10,13 @@ export default function ScheduledSuitesAndCalendar() {
     const [selectedDate, setSelectedDate] = useState(new Date());
     const [events, setEvents] = useState<{ id: number; title: string; day: number; startTime: Date }[]>([]);
     const [currentWeek, setCurrentWeek] = useState<{ day: string; date: string }[]>([]);
+    const [isOpen, setIsOpen] = useState(false);
+
+
+    const closeModal = () => {
+        setIsOpen(false);
+    };
+
 
     // Function to format the displayed week start date
     const formatWeekStart = (date: Date) => {
@@ -90,15 +97,17 @@ export default function ScheduledSuitesAndCalendar() {
             {/* Button + Week Selector */}
             <div className="flex items-center justify-start w-full gap-8 mb-6">
                 {/* Dialog and Button */}
-                <Dialog>
+                <Dialog open={isOpen} onOpenChange={setIsOpen}>
                     <DialogTrigger asChild>
-                        <button className="bg-blue-600 text-white py-2 px-4 rounded-lg text-sm hover:bg-blue-700">
+                        <button className="bg-blue-600 text-white py-2 px-4 rounded-lg text-sm hover:bg-blue-700"
+                            onClick={() => setIsOpen(true)} // Open the modal
+                        >
                             + Schedule Test
                         </button>
                     </DialogTrigger>
 
                     {/* Modal Content */}
-                    <ScheduleModalContent />
+                    <ScheduleModalContent closeModal={closeModal} />
                 </Dialog>
 
                 {/* Week Selector */}

@@ -12,7 +12,11 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { createClient } from "@/utils/supabase/client";
 
-export default function ScheduleModalContent() {
+interface ScheduleModalContentProps {
+    closeModal: () => void;
+}
+
+export default function ScheduleModalContent({ closeModal }: ScheduleModalContentProps) {
     const [selectedDays, setSelectedDays] = useState<string[]>(["Mon"]);
     const [testSuite, setTestSuite] = useState(""); // Selected test suite
     const [startDate, setStartDate] = useState("");
@@ -81,21 +85,22 @@ export default function ScheduleModalContent() {
 
                 // Add the new test suite to the local state
                 setTestSuites((prev) => [...prev, trimmedName]);
-                setTestSuite(trimmedName); // Set the new test suite as the current one
+                setTestSuite(trimmedName); // Ensure `testSuite` gets updated
                 setIsAddingNew(false); // Reset the flag
                 setNewTestSuiteName(""); // Clear the input
-                return; // Exit after adding a new test suite to avoid duplicate insertion
             }
 
-            // If not adding a new test suite, save the schedule
-            if (!testSuite) {
+            // Ensure a valid test suite is selected or added
+            const suiteToSave = isAddingNew ? newTestSuiteName.trim() : testSuite;
+            if (!suiteToSave) {
                 alert("Please select or add a test suite.");
                 return;
             }
 
+            // Save the schedule
             const { error } = await supabase.from("schedules").insert([
                 {
-                    test_suite: testSuite,
+                    test_suite: suiteToSave,
                     start_time: new Date(startDate).toISOString(),
                     days: selectedDays,
                 },
@@ -108,11 +113,14 @@ export default function ScheduleModalContent() {
             }
 
             alert("Schedule saved successfully!");
+            closeModal(); // Close the modal after successful save
         } catch (err) {
             console.error("Unexpected error:", err);
             alert("An unexpected error occurred. Please try again.");
         }
     };
+
+
 
     const handleCancel = async () => {
         try {
