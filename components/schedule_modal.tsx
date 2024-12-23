@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
     DialogContent,
     DialogHeader,
@@ -9,16 +9,39 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
-
 import { createClient } from "@/utils/supabase/client";
-
 
 export default function ScheduleModalContent() {
     const [selectedDays, setSelectedDays] = useState<string[]>(["Mon"]);
-    const [testSuite, setTestSuite] = useState("Demo Suite");
+    const [testSuite, setTestSuite] = useState(""); // Selected test suite
     const [startDate, setStartDate] = useState("2024-10-10T07:00");
+    const [testSuites, setTestSuites] = useState<string[]>([]); // List of test suites
+    const [isAddingNew, setIsAddingNew] = useState(false); // Flag for adding a new test suite
+    const [newTestSuiteName, setNewTestSuiteName] = useState(""); // New test suite name
+
+    // Fetch distinct test suites from the schedules table
+    useEffect(() => {
+        const fetchTestSuites = async () => {
+            try {
+                const supabase = createClient();
+                const { data, error } = await supabase
+                    .from("schedules")
+                    .select("test_suite", { distinct: true });
+
+                if (error) {
+                    console.error("Error fetching test suites:", error.message);
+                    return;
+                }
+
+                setTestSuites(data.map((suite: { test_suite: string }) => suite.test_suite));
+            } catch (err) {
+                console.error("Unexpected error:", err);
+            }
+        };
+
+        fetchTestSuites();
+    }, []);
 
     const handleDayToggle = (day: string) => {
         setSelectedDays((prev) =>
@@ -26,10 +49,22 @@ export default function ScheduleModalContent() {
         );
     };
 
-
     const handleSubmit = async () => {
         try {
-            const supabase = createClient(); // Create a new Supabase client instance
+            const supabase = createClient();
+
+            // Add new test suite to the table if a new one is being added
+            if (isAddingNew && newTestSuiteName) {
+                await supabase.from("schedules").insert([
+                    { test_suite: newTestSuiteName, start_time: null, days: [] },
+                ]);
+                setTestSuites((prev) => [...prev, newTestSuiteName]);
+                setTestSuite(newTestSuiteName);
+                setIsAddingNew(false);
+                setNewTestSuiteName(""); // Reset new test suite name
+            }
+
+            // Save the schedule
             const { data, error } = await supabase.from("schedules").insert([
                 {
                     test_suite: testSuite,
@@ -52,8 +87,33 @@ export default function ScheduleModalContent() {
         }
     };
 
+    const handleCancel = async () => {
+        try {
+            const supabase = createClient();
+            const { data, error } = await supabase
+                .from("schedules")
+                .delete()
+                .eq("test_suite", testSuite); // Delete the selected test suite
 
+            if (error) {
+                console.error("Error canceling schedule:", error.message);
+                alert("Failed to cancel schedule. Please try again.");
+                return;
+            }
 
+            alert("Schedule canceled successfully!");
+            console.log("Canceled schedule:", data);
+
+            // Optionally, refresh the list of test suites after deletion
+            const updatedSuites = await supabase
+                .from("schedules")
+                .select("test_suite", { distinct: true });
+            setTestSuites(updatedSuites.data.map((suite: { test_suite: string }) => suite.test_suite));
+        } catch (err) {
+            console.error("Unexpected error:", err);
+            alert("An unexpected error occurred. Please try again.");
+        }
+    };
 
     return (
         <DialogContent className="bg-white rounded-lg shadow-md p-6">
@@ -69,17 +129,46 @@ export default function ScheduleModalContent() {
                     handleSubmit();
                 }}
             >
-                {/* Test Suite */}
+                {/* Test Suite Dropdown */}
                 <div className="mb-4">
                     <Label htmlFor="test-suite" className="text-sm text-gray-700 font-medium">
                         Test Suite
                     </Label>
-                    <Input
-                        id="test-suite"
-                        value={testSuite}
-                        onChange={(e) => setTestSuite(e.target.value)}
-                        className="border border-gray-300 rounded-md mt-1 w-full"
-                    />
+                    {!isAddingNew ? (
+                        <select
+                            id="test-suite"
+                            value={testSuite}
+                            onChange={(e) => {
+                                const value = e.target.value;
+                                if (value === "add-new") {
+                                    setIsAddingNew(true);
+                                    setTestSuite("");
+                                } else {
+                                    setTestSuite(value);
+                                }
+                            }}
+                            className="border border-gray-300 rounded-md mt-1 w-full p-2"
+                            required
+                        >
+                            <option value="" disabled>Select a Test Suite</option>
+                            {testSuites.map((suite) => (
+                                <option key={suite} value={suite}>
+                                    {suite}
+                                </option>
+                            ))}
+                            <option value="add-new">+ Add New Test Suite</option>
+                        </select>
+                    ) : (
+                        <div className="flex items-center gap-2 mt-2">
+                            <Input
+                                value={newTestSuiteName}
+                                onChange={(e) => setNewTestSuiteName(e.target.value)}
+                                placeholder="New Test Suite Name"
+                                className="border border-gray-300 rounded-md flex-1"
+                            />
+
+                        </div>
+                    )}
                 </div>
 
                 {/* Start Date and Time */}
@@ -127,6 +216,7 @@ export default function ScheduleModalContent() {
                         type="button"
                         variant="ghost"
                         className="bg-red-50 text-red-600 hover:bg-red-100"
+                        onClick={handleCancel}
                     >
                         Cancel Schedule
                     </Button>
