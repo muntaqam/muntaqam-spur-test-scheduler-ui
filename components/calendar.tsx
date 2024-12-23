@@ -56,12 +56,15 @@ export default function ScheduledSuitesAndCalendar() {
                 }
 
                 const transformedEvents = data.flatMap((schedule) =>
-                    schedule.days.map((day: string) => ({
-                        id: schedule.id,
-                        title: schedule.test_suite,
-                        day: ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].indexOf(day),
-                        startTime: new Date(schedule.start_time).getHours(),
-                    }))
+                    schedule.days.map((day: string) => {
+                        const startDateTime = new Date(schedule.start_time); // Full Date object
+                        return {
+                            id: schedule.id,
+                            title: schedule.test_suite,
+                            day: ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].indexOf(day),
+                            startTime: startDateTime.getHours() + startDateTime.getMinutes() / 60, // Calculate fractional hour
+                        };
+                    })
                 );
 
                 setEvents(transformedEvents);
@@ -160,7 +163,8 @@ export default function ScheduledSuitesAndCalendar() {
                                             >
                                                 {events.map(
                                                     (event) =>
-                                                        event.day === dayIndex && event.startTime === timeIndex && (
+                                                        event.day === dayIndex &&
+                                                        Math.floor(event.startTime) === timeIndex && ( // Match integer hour
                                                             <div
                                                                 key={event.id}
                                                                 className="absolute top-1 left-1 right-1 h-16 bg-blue-50 text-blue-700 rounded-lg shadow-md flex flex-col items-start justify-center px-4 border border-blue-400"
@@ -181,7 +185,7 @@ export default function ScheduledSuitesAndCalendar() {
                                                                             d="M12 6v6h4.5m4.5 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"
                                                                         />
                                                                     </svg>
-                                                                    {new Date(event.startTime).toLocaleTimeString([], {
+                                                                    {new Date(event.startTime * 3600 * 1000).toLocaleTimeString([], {
                                                                         hour: "2-digit",
                                                                         minute: "2-digit",
                                                                         hour12: true,
@@ -195,6 +199,7 @@ export default function ScheduledSuitesAndCalendar() {
                                         ))}
                                     </div>
                                 ))}
+
                             </div>
                         </div>
                     </div>
