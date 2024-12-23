@@ -59,7 +59,6 @@ export default function ScheduleModalContent({ closeModal }: ScheduleModalConten
             prev.includes(day) ? prev.filter((d) => d !== day) : [...prev, day]
         );
     };
-
     const handleSubmit = async () => {
         try {
             const supabase = createClient();
@@ -83,16 +82,20 @@ export default function ScheduleModalContent({ closeModal }: ScheduleModalConten
                     return;
                 }
 
-                // Add the new test suite to the local state
+                // Update local state after successfully adding a test suite
                 setTestSuites((prev) => [...prev, trimmedName]);
-                setTestSuite(trimmedName); // Ensure `testSuite` gets updated
+                setTestSuite(trimmedName); // Set the new test suite as the current one
                 setIsAddingNew(false); // Reset the flag
                 setNewTestSuiteName(""); // Clear the input
+
+                // Close the modal and exit to avoid redundant schedule insertion
+                closeModal();
+                alert("New test suite added successfully!");
+                return;
             }
 
-            // Ensure a valid test suite is selected or added
-            const suiteToSave = isAddingNew ? newTestSuiteName.trim() : testSuite;
-            if (!suiteToSave) {
+            // If not adding a new test suite, ensure one is selected
+            if (!testSuite) {
                 alert("Please select or add a test suite.");
                 return;
             }
@@ -100,7 +103,7 @@ export default function ScheduleModalContent({ closeModal }: ScheduleModalConten
             // Save the schedule
             const { error } = await supabase.from("schedules").insert([
                 {
-                    test_suite: suiteToSave,
+                    test_suite: testSuite,
                     start_time: new Date(startDate).toISOString(),
                     days: selectedDays,
                 },
@@ -112,8 +115,8 @@ export default function ScheduleModalContent({ closeModal }: ScheduleModalConten
                 return;
             }
 
-            alert("Schedule saved successfully!");
             closeModal(); // Close the modal after successful save
+            alert("Schedule saved successfully!");
         } catch (err) {
             console.error("Unexpected error:", err);
             alert("An unexpected error occurred. Please try again.");
