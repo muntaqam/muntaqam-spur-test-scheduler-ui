@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { Dialog, DialogTrigger } from "@/components/ui/dialog";
-import ScheduleModalContent from "@/components/schedule_modal";
+import ScheduleTestModal from "./ScheduleTestModal/ScheduleTestModal";
 
 export default function ScheduledSuites() {
     // State to track the currently selected date (start of the week)
@@ -40,7 +40,7 @@ export default function ScheduledSuites() {
                     </DialogTrigger>
 
                     {/* Modal Content */}
-                    <ScheduleModalContent />
+                    <ScheduleTestModal />
                 </Dialog>
 
                 {/* Week Selector */}
