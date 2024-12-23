@@ -91,7 +91,7 @@ export default function ScheduleModalContent({ closeModal }: ScheduleModalConten
 
                 // Close the modal and exit to avoid redundant schedule insertion
                 closeModal();
-                alert("Toast triggered");
+                //alert("Toast triggered");
                 toast.success("Test suite added to schedule!");
                 return;
             }
@@ -117,10 +117,10 @@ export default function ScheduleModalContent({ closeModal }: ScheduleModalConten
                 return;
             }
 
-            alert("Toast triggered");
+            // alert("Toast triggered");
             toast.success("Test suite added to schedule!");
             closeModal(); // Close the modal after successful save
-            alert("Schedule saved successfully!");
+            // alert("Schedule saved successfully!");
         } catch (err) {
             console.error("Unexpected error:", err);
             alert("An unexpected error occurred. Please try again.");
@@ -145,7 +145,8 @@ export default function ScheduleModalContent({ closeModal }: ScheduleModalConten
                 return;
             }
 
-            alert("Schedule canceled successfully!");
+            //alert("Schedule canceled successfully!");
+            closeModal();
 
             // Refresh the list of test suites after deletion
             const { data } = await supabase
