@@ -86,7 +86,7 @@ export default function ScheduleModalContent({ closeModal }: ScheduleModalConten
                 // Update local state after successfully adding a test suite
                 setTestSuites((prev) => [...prev, trimmedName]);
                 setTestSuite(trimmedName); // Set the new test suite as the current one
-                setIsAddingNew(false); // Reset the flag
+                setIsAddingNew(true); // Reset the flag
                 setNewTestSuiteName(""); // Clear the input
 
                 // Close the modal and exit to avoid redundant schedule insertion
