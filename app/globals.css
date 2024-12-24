@@ -67,3 +67,7 @@
     @apply bg-background text-foreground;
   }
 }
+
+.Toastify__toast-container {
+    z-index: 9999 !important; /* Ensure toast appears on top */
+}
